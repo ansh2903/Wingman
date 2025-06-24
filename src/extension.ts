@@ -1,9 +1,12 @@
 import * as vscode from 'vscode';
 
+
 export function activate(context: vscode.ExtensionContext){
 	const disposable = vscode.commands.registerCommand('wingman.suggestCode', async()=>{
 		const editor = vscode.window.activeTextEditor;
-		if(!editor) return;
+		if(!editor) {
+			return;
+		}
 
 		const selectedText = editor.document.getText(editor.selection) || "Continue this code \n" + editor.document.getText();
 
