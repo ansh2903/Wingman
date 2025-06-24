@@ -1,26 +1,47 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext){
+	const disposable = vscode.commands.registerCommand('wingman.suggestCode', async()=>{
+		const editor = vscode.window.activeTextEditor;
+		if(!editor) return;
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "wingman" is now active!');
+		const selectedText = editor.document.getText(editor.selection) || "Continue this code \n" + editor.document.getText();
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('wingman.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Wingman!');
+		vscode.window.showInformationMessage('Wingman is thinking...');
+
+		const suggestion = await queryOllama(selectedText);
+
+		editor.edit(editBuilder =>{
+			editBuilder.insert(editor.selection.end, '\n' + suggestion);
+		});
+
+		vscode.window.showInformationMessage('Wingman has finished thinking!');
 	});
 
 	context.subscriptions.push(disposable);
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
+
+async function queryOllama(prompt: string): Promise<string> {
+	try {
+		const fetch = (await import('node-fetch')).default;
+
+		const response = await fetch('http://localhost:11434/api/generate', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				model: 'deepseek-coder:6.7b',
+				prompt: prompt,
+				stream: false
+			})
+		});
+
+		const json = await response.json() as { response?: string };
+		return json.response || "// No response from model.";
+	} catch (error) {
+		console.error('Ollama API error: ', error);
+		return "// Failed to connect to Ollama";
+	
+	}
+}
