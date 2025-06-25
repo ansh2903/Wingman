@@ -1,37 +1,183 @@
 import * as vscode from 'vscode';
 
 export function activate(context: vscode.ExtensionContext) {
-	const disposable = vscode.commands.registerCommand('wingman.suggestCode', async () => {
-		const editor = vscode.window.activeTextEditor;
-		if (!editor) {
-			return;
-		};
+	context.subscriptions.push(
+		// Command to explain code
+		vscode.commands.registerCommand('wingman.explainCode', async () => {
+			
+			const editor = vscode.window.activeTextEditor;
+			if (!editor) {
+				return;
+			};
 
-		const selectedText = editor.document.getText(editor.selection) || "Continue this code:\n" + editor.document.getText();
-		const filePath = editor.document.uri.fsPath;
+			const selectedText = editor.document.getText(editor.selection) || "Continue this code:\n" + editor.document.getText();
+			const filePath = editor.document.uri.fsPath;
 
-		vscode.window.showInformationMessage('Wingman is thinking...');
+			vscode.window.showInformationMessage('Wingman is thinking...');
 
-		const projectContext = await getProjectContext();
+			const projectContext = await getProjectContext();
 
-		const fullPrompt = `You are an AI programming assistant. Here's the context of the current project:
-			${projectContext}
-			Now assist with the following code (from ${filePath}):
-			${selectedText}`;
+			const fullPrompt = `You are an AI programming assistant. Here's the context of the current project:
+				${projectContext}
+				Use the following code (from ${filePath}) as context:
+				Explain this code :\n${selectedText}`;
 
-		const suggestion = await queryOllama(fullPrompt);
+			const suggestion = await queryOllama(fullPrompt);
 
-		editor.edit(editBuilder => {
-			editBuilder.insert(editor.selection.end, '\n\n' 
-				+ '----------------------------------------------------------------------------------------------------------------\n'
-				+suggestion + '\n\n' 
-				+ '----------------------------------------------------------------------------------------------------------------');
-		});
+			editor.edit(editBuilder => {
+				editBuilder.insert(editor.selection.end, '\n\n' 
+					+ '----------------------------------------------------------------------------------------------------------------\n'
+					+suggestion + '\n\n' 
+					+ '----------------------------------------------------------------------------------------------------------------');
+				}
+			);
+			vscode.window.showInformationMessage('Wingman has finished thinking!');
+		}),
 
-		vscode.window.showInformationMessage('Wingman has finished thinking!');
-	});
+		// Command to fix code
+		vscode.commands.registerCommand('wingman.fixCode', async () =>{
+			try{
+				const editor = vscode.window.activeTextEditor;
+				if (!editor) {
+					return;
+				}
 
-	context.subscriptions.push(disposable);
+				const selectedText = editor.document.getText(editor.selection) || "Continue this code:\n" + editor.document.getText();
+				const filePath = editor.document.uri.fsPath;
+
+				vscode.window.showInformationMessage('Wingman is fixing your code...');
+
+				const projectContext = await getProjectContext();
+
+				const fullPrompt = 'You are an AI programming assistant. Here\'s the context of the current project:\n' +
+					projectContext + 
+					'\nUse the following code (from ' + filePath + ') as context:\n' +
+					'Fix this code:\n' + selectedText;
+
+				const suggestion = await queryOllama(fullPrompt);
+
+				editor.edit(editBuilder => {
+					editBuilder.insert(editor.selection.end, '\n\n' 
+						+ '----------------------------------------------------------------------------------------------------------------\n'
+						+ suggestion + '\n\n' 
+						+ '----------------------------------------------------------------------------------------------------------------');
+					}
+				);
+				vscode.window.showInformationMessage('Wingman has finished fixing your code!');
+			}
+			catch (error) {
+				console.error('Error while fixing code: ' + error);
+			}
+		}),
+
+		// Command to Review code
+		vscode.commands.registerCommand('wingman.reviewCode', async () =>{
+			try{
+				const editor = vscode.window.activeTextEditor;
+				if (!editor){
+					return;
+				}
+
+				const selectedText = editor.document.getText(editor.selection) || "Continue this code:\n" + editor.document.getText();
+				const filePath = editor.document.uri.fsPath;
+
+				vscode.window.showInformationMessage('Wingman is reviewing your code...');
+
+				const projectContext = await getProjectContext();
+
+				const fullPrompt = 'You are an AI programming assistant. Here\'s the context of the current project:\n' +
+					projectContext + 
+					'\nUse the following code (from ' + filePath + ') as context:\n' +
+					'Review this code:\n' + selectedText;
+
+				const suggestion = await queryOllama(fullPrompt);
+
+				editor.edit(editBuilder => {
+					editBuilder.insert(editor.selection.end, '\n\n' 
+						+ '----------------------------------------------------------------------------------------------------------------\n'
+						+ suggestion + '\n\n' 
+						+ '----------------------------------------------------------------------------------------------------------------');
+					}
+				);
+				vscode.window.showInformationMessage('Wingman has finished reviewing your code!');
+			}
+			catch (error) {
+				console.error('Error while reviewing code: ' + error);
+			}
+		}),
+
+		// Command to generate Documentation
+		vscode.commands.registerCommand('wingman.generateDocs', async () => {
+			try{
+				const editor = vscode.window.activeTextEditor;
+			if (!editor) {
+				return;
+			}
+
+			const selectedText = editor.document.getText(editor.selection) || "Continue this code:\n" + editor.document.getText();
+			const filePath = editor.document.uri.fsPath;
+
+			vscode.window.showInformationMessage('Wingman is generating documentation...');
+			const projectContext = await getProjectContext();
+
+			const fullPrompt = 'You are an AI programming assistant. Here\'s the context of the current project:\n' +
+				projectContext + 
+				'\nUse the following code (from ' + filePath + ') as context:\n' +
+				'Generate documentation for this code:\n' + selectedText;
+
+			const suggestion = await queryOllama(fullPrompt);
+
+			editor.edit(editBuilder => {
+				editBuilder.insert(editor.selection.end, '\n\n' 
+					+ '----------------------------------------------------------------------------------------------------------------\n'
+					+ suggestion + '\n\n' 
+					+ '----------------------------------------------------------------------------------------------------------------');
+				}
+			);
+			vscode.window.showInformationMessage('Wingman has finished generating documentation!');
+
+			}catch (error) {
+				console.error('Error while generating documentation: ' + error);	
+			}
+
+			}
+		),
+
+		// Command to generate Tests
+		vscode.commands.registerCommand('wingman.generateTests', async () => {
+			try {
+				const editor = vscode.window.activeTextEditor;
+				if (!editor) {
+					return;
+				}
+
+				const selectedText = editor.document.getText(editor.selection) || "Continue this code:\n" + editor.document.getText();
+				const filePath = editor.document.uri.fsPath;
+
+				vscode.window.showInformationMessage('Wingman is generating tests...');
+
+				const projectContext = await getProjectContext();
+
+				const fullPrompt = 'You are an AI programming assistant. Here\'s the context of the current project:\n' +
+					projectContext + 
+					'\nUse the following code (from ' + filePath + ') as context:\n' +
+					'Generate tests for this code:\n' + selectedText;
+
+				const suggestion = await queryOllama(fullPrompt);
+
+				editor.edit(editBuilder => {
+					editBuilder.insert(editor.selection.end, '\n\n' 
+						+ '----------------------------------------------------------------------------------------------------------------\n'
+						+ suggestion + '\n\n' 
+						+ '----------------------------------------------------------------------------------------------------------------');
+					}
+				);
+				vscode.window.showInformationMessage('Wingman has finished generating tests!');
+			}catch (error) {
+				console.error('Error while generating tests: ' + error);
+			}
+		})
+	);
 }
 
 export function deactivate() {}
