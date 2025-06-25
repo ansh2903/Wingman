@@ -3,14 +3,15 @@ import * as vscode from 'vscode';
 export function activate(context: vscode.ExtensionContext) {
 	const disposable = vscode.commands.registerCommand('wingman.suggestCode', async () => {
 		const editor = vscode.window.activeTextEditor;
-		if (!editor) return;
+		if (!editor) {
+			return;
+		};
 
 		const selectedText = editor.document.getText(editor.selection) || "Continue this code:\n" + editor.document.getText();
 		const filePath = editor.document.uri.fsPath;
 
 		vscode.window.showInformationMessage('Wingman is thinking...');
 
-		// Gather full project context
 		const projectContext = await getProjectContext();
 
 		const fullPrompt = `You are an AI programming assistant. Here's the context of the current project:
@@ -59,9 +60,9 @@ async function queryOllama(prompt: string): Promise<string> {
 
 async function getProjectContext(): Promise<string> {
 	const files = await vscode.workspace.findFiles(
-		'**/*.{ts,js,py,java,cpp,json,html,css,md}',  // Include only meaningful code files
-		'**/node_modules/**', // Exclude node_modules
-		10 // limit to 10 files for now
+		'**/*.{ts,js,py,java,cpp,json,html,css,md}',
+		'**/node_modules/**',
+		10 
 	);
 
 	const contents: string[] = [];
