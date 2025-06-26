@@ -176,6 +176,56 @@ export function activate(context: vscode.ExtensionContext) {
 			}catch (error) {
 				console.error('Error while generating tests: ' + error);
 			}
+		}),
+
+		// Settings menu
+		vscode.commands.registerCommand('wingman.openSettings', async () => {
+			const panel = vscode.window.createWebviewPanel(
+				'wingmanSettings',
+				'Wingman Settings',
+				vscode.ViewColumn.One,
+				{
+					enableScripts: true
+				}
+			);
+
+			const currentSettings: {
+				model: string;
+				context: number;
+				streaming: boolean;
+				memory: number;
+			} = context.globalState.get('wingmanSettings') as any || {
+				model: 'qwen2.5-coder:1.5b',
+				context: 2048,
+				streaming: false,
+				memory: 1024
+			};
+
+			panel.webview.html = getSettingsWebviewHtml(currentSettings);  // a function to return HTML
+
+			// 🔽 Place your message handler code here
+			panel.webview.onDidReceiveMessage(
+				message => {
+				switch (message.type) {
+					case 'save':
+						context.globalState.update('wingmanSettings', message.settings);
+						vscode.window.showInformationMessage('Settings saved!');
+						break;
+					case 'reset':
+						const defaults = {
+							model: 'deepseek-coder:6.7b',
+							context: 2048,
+							streaming: false,
+							memory: 1024
+						};
+						context.globalState.update('wingmanSettings', defaults);
+						vscode.window.showInformationMessage('Settings reset to default.');
+						break;
+					}
+				},
+				undefined,
+				context.subscriptions
+			);
 		})
 	);
 }
@@ -190,7 +240,7 @@ async function queryOllama(prompt: string): Promise<string> {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
-				model: 'deepseek-coder:6.7b',
+				model: 'qwen2.5-coder:1.5b',
 				prompt: prompt,
 				stream: false
 			})
@@ -223,4 +273,72 @@ async function getProjectContext(): Promise<string> {
 	}
 
 	return contents.join('\n\n');
+}
+
+function getSettingsWebviewHtml(settings: {
+			model: string;
+			context: number;
+			streaming: boolean;
+			memory: number;
+		}
+	): string {
+		return `
+		<!DOCTYPE html>
+		<html lang="en">
+		<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<style>
+			body { font-family: sans-serif; padding: 1rem; }
+			label { display: block; margin-top: 1rem; }
+			input, select { width: 100%; padding: 0.4rem; margin-top: 0.2rem; }
+			button { margin-top: 1rem; padding: 0.6rem 1rem; }
+		</style>
+		<title>Wingman Settings</title>
+		</head>
+		<body>
+		<h2>Wingman Settings</h2>
+
+		<label>Model
+			<input type="text" id="model" value="deepseek-coder:6.7b" />
+		</label>
+
+		<label>Context Window
+			<input type="number" id="context" value="2048" />
+		</label>
+
+		<label>Streaming
+			<select id="streaming">
+			<option value="true">Enabled</option>
+			<option value="false" selected>Disabled</option>
+			</select>
+		</label>
+
+		<label>Memory (MB)
+			<input type="number" id="memory" value="1024" />
+		</label>
+
+		<button onclick="saveSettings()">Save Settings</button>
+		<button onclick="resetSettings()">Reset to Defaults</button>
+
+		<script>
+			const vscode = acquireVsCodeApi();
+
+			function saveSettings() {
+			const settings = {
+				model: document.getElementById('model').value,
+				context: document.getElementById('context').value,
+				streaming: document.getElementById('streaming').value === 'true',
+				memory: document.getElementById('memory').value
+			};
+			vscode.postMessage({ type: 'save', settings });
+			}
+
+			function resetSettings() {
+			vscode.postMessage({ type: 'reset' });
+			}
+		</script>
+		</body>
+		</html>
+	`;
 }

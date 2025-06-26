@@ -16,6 +16,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "wingman.openSettings",
+        "title": "Settings"
+      },
+      {
         "command": "wingman.explainCode",
         "title": "Explain Code"
       },
@@ -64,6 +68,10 @@
         {
           "command": "wingman.generateTests",
           "group": "navigation"
+        },
+        {
+          "command": "wingman.openSettings",
+          "group": "@settings"
         }
       ]
     },
