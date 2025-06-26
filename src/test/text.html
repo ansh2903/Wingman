@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: sans-serif; padding: 1rem; }
+    label { display: block; margin-top: 1rem; }
+    input, select { width: 100%; padding: 0.4rem; margin-top: 0.2rem; }
+    button { margin-top: 1rem; padding: 0.6rem 1rem; }
+  </style>
+  <title>Wingman Settings</title>
+</head>
+<body>
+  <h2>Wingman Settings</h2>
+
+  <label>Model
+    <select id="model">
+      <!-- Options will be injected dynamically -->
+    </select>
+  </label>
+
+  <label>Context Window
+    <input type="number" id="context" value="2048" />
+  </label>
+
+  <label>Streaming
+    <select id="streaming">
+      <option value="true">Enabled</option>
+      <option value="false" selected>Disabled</option>
+    </select>
+  </label>
+<label>Max Tokens (num_predict)</label>
+<input type="number" id="num_predict" value="1024" />
+
+<label>Temperature</label>
+<input type="number" step="0.1" id="temperature" value="0.7" />
+
+<label>Top-k</label>
+<input type="number" id="top_k" value="40" />
+
+<label>Top-p</label>
+<input type="number" step="0.01" id="top_p" value="0.9" />
+
+<label>Min-p</label>
+<input type = "number" step="0.01" id="min_p" value="0.1" />
+
+<label>num_gpu</label>
+<input type="number" id="num_gpu" value="1" />
+
+<label>History</label>
+<select id = "history">
+    <option value = "true">Enabled</option>
+    <option value = "false" selected>Disabled</option>
+</select>
+
+<label>Thinking</label>
+<select id = "thinking">
+    <option value = "true">Enabled</option>
+    <option value = "false" selected>Disabled</option>
+</select>
+
+<label>Prompt Template</label>
+<textarea id="prompt_template" rows="5"></textarea>
+
+<!-- more if needed -->
+
+  <button onclick="saveSettings()">Save Settings</button>
+  <button onclick="resetSettings()">Reset to Defaults</button>
+</body>
+</html>

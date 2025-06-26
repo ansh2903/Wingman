@@ -10,9 +10,7 @@
     "Other"
   ],
   "activationEvents": [],
-
   "main": "./dist/extension.js",
-
   "contributes": {
     "commands": [
       {
@@ -110,6 +108,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "dotenv": "^16.5.0",
     "node-fetch": "^3.3.2"
   }
 }
