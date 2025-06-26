@@ -1,4 +1,4 @@
-# Wingman - Open source Copilot alternative for VS code (WIP)
+# Wingman - Open source Copilot alternative for VS code (Halted development)
 
 Wingman is an open-source, offline-first AI coding assistant for Visual Studio Code that integrates with locally running LLMs (such as via Ollama). It helps developers by providing context-aware code assistance like explanation, fixing, reviewing, documentation, and test generation — all directly from the context menu.
 
